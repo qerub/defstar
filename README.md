@@ -1,14 +1,43 @@
-# defstar
+```clj
+;; def*                  (pronounced defstar)
+;;
+;; An experiment in macrology and in an
+;; alternative definition form for Clojure
+;; based on Racket's define
+;;
+;; Not to be confused with
+;; https://bitbucket.org/eeeickythump/defstar
+;;
+;; - - - - - - - - - - - - - - - - - - - - - -
 
-A Clojure library designed to ... well, that part is up to you.
+(use 'defstar.core)
 
-## Usage
+;; It can define anything:
 
-FIXME
+(def* n 42)
 
-## License
+;; It can define functions:
 
-Copyright © 2014 FIXME
+(def* (f x) (+ x n))
 
-Distributed under the Eclipse Public License either version 1.0 or (at
-your option) any later version.
+;; It can define curried functions:
+
+(def* ((adder x) y) (+ x y))
+
+((adder 1) 2) ; => 3
+
+;; It supports local definitions:
+
+(def* (f x)
+  (def n 42)
+  (* n x))
+
+(def* (f x)
+  (def* (a x) (+ x 2))
+  (def* (b x) (* x 2))
+  (->> x a b))
+
+;; - - - - - - - - - - - - - - - - - - - - - -
+;;
+;; Copyright (c) 2014 Christoffer Sawicki
+```

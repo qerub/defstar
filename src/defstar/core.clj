@@ -1,6 +1,30 @@
-(ns defstar.core)
+(ns defstar.core
+  (:use [clojure.core.match :only [match]]))
 
-(defn foo
-  "I don't do a whole lot."
-  [x]
-  (println x "Hello, World!"))
+(defmacro do* [& xs]
+  (if (seq xs)
+    (let [x (macroexpand (first xs))]
+      (if (and (seq? x) (= (first x) 'def))
+        `(let [~@(rest x)] (do* ~@(next xs)))
+        (if (next xs)
+          `(do ~x (do* ~@(next xs)))
+          x)))
+    `(do)))
+
+;; fn* is used internally in Clojure
+(defmacro lambda* [args & body]
+  `(fn ~args (do* ~@body)))
+
+(defmacro def* [& margs]
+  ;; :seq matches (U ISeq Sequential) so vectors are unfortunately also matched
+
+  (match (vec margs)
+    [  (name :guard symbol?)               (docs :guard string?) body]          `(def  ~name  ~docs ~body)
+    [([(name :guard symbol?) & args] :seq) (docs :guard string?) body0 & body*] `(def  ~name  ~docs (lambda* [~@args] ~body0 ~@body*))
+    [([([& inner] :seq)      & args] :seq) (docs :guard string?) body0 & body*] `(def* ~inner ~docs (lambda* [~@args] ~body0 ~@body*))
+
+    [  (name :guard symbol?)                 body]  `(def  ~name  ~body)
+    [([(name :guard symbol?) & args] :seq) & body*] `(def  ~name  (lambda* [~@args] ~@body*))
+    [([([& inner] :seq)      & args] :seq) & body*] `(def* ~inner (lambda* [~@args] ~@body*))
+
+    :else (throw (ex-info "Invalid invocation of def*" {:form (cons 'def* margs)}))))
