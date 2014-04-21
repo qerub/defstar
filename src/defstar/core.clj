@@ -12,7 +12,7 @@
     `(do)))
 
 ;; fn* is used internally in Clojure
-(defmacro lambda* [args & body]
+(defmacro fn** [args & body]
   `(fn ~args (do* ~@body)))
 
 (defmacro def* [& margs]
@@ -20,11 +20,11 @@
 
   (match (vec margs)
     [  (name :guard symbol?)               (docs :guard string?) body]          `(def  ~name  ~docs ~body)
-    [([(name :guard symbol?) & args] :seq) (docs :guard string?) body0 & body*] `(def  ~name  ~docs (lambda* [~@args] ~body0 ~@body*))
-    [([([& inner] :seq)      & args] :seq) (docs :guard string?) body0 & body*] `(def* ~inner ~docs (lambda* [~@args] ~body0 ~@body*))
+    [([(name :guard symbol?) & args] :seq) (docs :guard string?) body0 & body*] `(def  ~name  ~docs (fn** [~@args] ~body0 ~@body*))
+    [([([& inner] :seq)      & args] :seq) (docs :guard string?) body0 & body*] `(def* ~inner ~docs (fn** [~@args] ~body0 ~@body*))
 
     [  (name :guard symbol?)                 body]  `(def  ~name  ~body)
-    [([(name :guard symbol?) & args] :seq) & body*] `(def  ~name  (lambda* [~@args] ~@body*))
-    [([([& inner] :seq)      & args] :seq) & body*] `(def* ~inner (lambda* [~@args] ~@body*))
+    [([(name :guard symbol?) & args] :seq) & body*] `(def  ~name  (fn** [~@args] ~@body*))
+    [([([& inner] :seq)      & args] :seq) & body*] `(def* ~inner (fn** [~@args] ~@body*))
 
     :else (throw (ex-info "Invalid invocation of def*" {:form (cons 'def* margs)}))))
