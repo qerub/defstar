@@ -1,4 +1,3 @@
-```clj
 ;; def*                  (pronounced defstar)
 ;;
 ;; An experiment in macrology and in an
@@ -40,4 +39,3 @@
 ;; - - - - - - - - - - - - - - - - - - - - - -
 ;;
 ;; Copyright (c) 2014 Christoffer Sawicki
-```
